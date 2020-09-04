@@ -44,7 +44,7 @@ const renderTask = (taskListElement, task) => {
 
 
 render(siteHeaderElement, new SiteMenuView().getElement(),
-  RenderPosition.BEFOREEND);
+    RenderPosition.BEFOREEND);
 
 render(siteMainElement, new FilterView(filters).getElement(), RenderPosition.BEFOREEND);
 
@@ -57,8 +57,8 @@ render(boardComponent.getElement(), taskListComponent.getElement(), RenderPositi
 
 
 for (let i = 0; i < Math.min(tasks.length, TASK_COUNT_PER_STEP); i++) {
-    renderTask(taskListComponent.getElement(), tasks[i]);
-  }
+  renderTask(taskListComponent.getElement(), tasks[i]);
+}
 
 if (tasks.length > TASK_COUNT_PER_STEP) {
   let renderedTaskCount = TASK_COUNT_PER_STEP;
