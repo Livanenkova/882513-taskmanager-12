@@ -5,7 +5,7 @@ import NoTaskView from "../view/no-task.js";
 import TaskView from "../view/task.js";
 import TaskEditView from "../view/task-edit.js";
 import LoadMoreButtonView from "../view/load-more-button.js";
-import {render, RenderPosition} from "../utils/render.js";
+import {render, RenderPosition, replace, remove} from "../utils/render.js";
 
 const TASK_COUNT_PER_STEP = 8;
 
@@ -36,6 +36,35 @@ export default class Board {
   _renderTask(task) {
     // Метод, куда уйдёт логика созданию и рендерингу компонетов задачи,
     // текущая функция renderTask в main.js
+    const taskComponent = new TaskView(task);
+
+    const replaceCardToForm = () => {
+      replace(taskEditComponent, taskComponent);
+    };
+
+    const replaceFormToCard = () => {
+      replace(taskComponent, taskEditComponent);
+    };
+
+    const onEscKeyDown = (evt) => {
+      if (evt.key === `Escape` || evt.key === `Esc`) {
+        evt.preventDefault();
+        replaceFormToCard();
+        document.removeEventListener(`keydown`, onEscKeyDown);
+      }
+    };
+
+    taskComponent.setEditClickHandler(() => {
+      replaceCardToForm();
+      document.addEventListener(`keydown`, onEscKeyDown);
+    });
+
+    taskEditComponent.setFormSubmitHandler(() => {
+      replaceFormToCard();
+      document.removeEventListener(`keydown`, onEscKeyDown);
+    });
+
+    render(this._taskListComponent, taskComponent, RenderPosition.BEFOREEND);
   }
 
   _renderTasks(from, to) {
@@ -51,8 +80,23 @@ export default class Board {
   }
 
   _renderLoadMoreButton() {
-    // Метод, куда уйдёт логика по отрисовке компонетов задачи,
+  let renderedTaskCount = TASK_COUNT_PER_STEP;
     // текущая функция renderTask в main.js
+    const loadMoreButtonComponent = new LoadMoreButtonView();
+
+    render(this._boardComponent, loadMoreButtonComponent, RenderPosition.BEFOREEND);
+
+    loadMoreButtonComponent.setClickHandler(() => {
+      this._boardTasks
+        .slice(renderedTaskCount, renderedTaskCount + TASK_COUNT_PER_STEP)
+        .forEach((boardTask) => this._renderTask(boardTask));
+
+      renderedTaskCount += TASK_COUNT_PER_STEP;
+
+      if (renderedTaskCount >= this._boardTasks.length) {
+        remove(loadMoreButtonComponent);
+      }
+    });
   }
 
   _renderBoard() {
